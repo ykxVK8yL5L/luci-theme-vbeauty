@@ -1,2 +1,2 @@
 # luci-theme-vbeauty
-theme of openwrt
+![image](https://github.com/ykxVK8yL5L/luci-theme-vbeauty/blob/main/Screenshots/Login.png?raw=true)
