@@ -1,0 +1,252 @@
+<%
+	local sys = require "luci.sys"
+	local util = require "luci.util"
+	local http = require "luci.http"
+	local disp = require "luci.dispatcher"
+
+	local boardinfo = util.ubus("system", "board")
+
+	local node = disp.context.dispatched
+
+	local fs = require "nixio.fs"
+	local nutil = require "nixio.util"
+	local uci = require 'luci.model.uci'.cursor()
+	local media = luci.config.main.mediaurlbase
+
+	-- send as HTML5
+	http.prepare_content("text/html")
+-%>
+
+
+
+
+
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
+    <meta name="generator" content="Hugo 0.82.0">
+    <title><%=striptags( (boardinfo.hostname or "?") ) %> - Login</title>
+
+    <link rel="canonical" href="https://getbootstrap.com/docs/5.0/examples/sign-in/">
+
+    
+
+    <!-- Bootstrap core CSS -->
+<link href="<%=media%>/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="<%=media%>/css/style.css" rel="stylesheet" type="text/css"/>
+ <link href="<%=media%>/css/signin.css" rel="stylesheet">
+    <style>
+      .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+      }
+
+      @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+          font-size: 3.5rem;
+        }
+      }
+    </style>
+
+     <script src="<%=media%>/js/jquery.js"></script>
+    <script src="<%=media%>/js/particles.min.js"></script>
+    <script src="<%=media%>/js/font.js"></script>
+    <!-- Custom styles for this template -->
+    <% 
+		local sys = require "luci.sys"
+		local json = require "luci.jsonc"
+		local remote_bg_url="http://www.bing.com/HPImageArchive.aspx?format=js&idx=0&n=1&mkt=en-US"
+		--bing = sys.httpget(remote_bg_url)
+		bing = sys.exec("wget --timeout=0.5 -qO- '%s'" %remote_bg_url)
+		if (bing and bing ~= '') then
+			bg_url = "https://www.bing.com" .. json.parse(bing).images[1].url
+		end
+	%>
+   
+  </head>
+  <body class="text-center" style="background-image:url(<%=bg_url%>)">
+  	<div id="particles-js" style="position:absolute; top: 0; z-index: -100; width: 100%;height: 100%;">
+    <canvas class="particles-js-canvas-el" height="960" style="width: 100%; height: 100%;" width="1303"></canvas>
+</div>
+
+<script>particlesJS("particles-js", {
+    particles: {
+        number: {
+            value: 20,
+            density: {
+                enable: !0,
+                value_area: 1000
+            }
+        },
+        color: {
+            value: "#e1e1e1"
+        },
+        shape: {
+            type: "circle",
+            stroke: {
+                width: 0,
+                color: "#000000"
+            },
+            polygon: {
+                nb_sides: 5
+            },
+            image: {
+                src: "img/github.svg",
+                width: 100,
+                height: 100
+            }
+        },
+        opacity: {
+            value: 0.5,
+            random: !1,
+            anim: {
+                enable: !1,
+                speed: 1,
+                opacity_min: 0.1,
+                sync: !1
+            }
+        },
+        size: {
+            value: 15,
+            random: !0,
+            anim: {
+                enable: !1,
+                speed: 180,
+                size_min: 0.1,
+                sync: !1
+            }
+        },
+        line_linked: {
+            enable: !0,
+            distance: 650,
+            color: "#cfcfcf",
+            opacity: 0.26,
+            width: 1
+        },
+        move: {
+            enable: !0,
+            speed: 2,
+            direction: "none",
+            random: !0,
+            straight: !1,
+            out_mode: "out",
+            bounce: !1,
+            attract: {
+                enable: !1,
+                rotateX: 600,
+                rotateY: 1200
+            }
+        }
+    },
+    interactivity: {
+        detect_on: "canvas",
+        events: {
+            onhover: {
+                enable: !1,
+                mode: "repulse"
+            },
+            onclick: {
+                enable: !1,
+                mode: "push"
+            },
+            resize: !0
+        },
+        modes: {
+            grab: {
+                distance: 400,
+                line_linked: {
+                    opacity: 1
+                }
+            },
+            bubble: {
+                distance: 400,
+                size: 40,
+                duration: 2,
+                opacity: 8,
+                speed: 3
+            },
+            repulse: {
+                distance: 200,
+                duration: 0.4
+            },
+            push: {
+                particles_nb: 4
+            },
+            remove: {
+                particles_nb: 2
+            }
+        }
+    },
+    retina_detect: !0
+});</script>
+    
+<main class="form-signin">
+
+<form method="post" action="<%=pcdata(luci.http.getenv("REQUEST_URI"))%>" style="background:rgba(255,255,250,0.7);padding: 10px;">
+	<%- if fuser then %>
+	<div class="errorbox"><%:Invalid username and/or password! Please try again.%></div>
+	<% end -%>
+    <h1 class="h1 mb-4 fw-normal"><%:Authorization Required%></h1>
+
+    <div class="form-floating">
+      <input type="input" class="form-control" id="floatingInput" name="luci_username" value="<%=duser%>">
+      <label for="floatingInput"><%:Username%></label>
+    </div>
+    <div class="form-floating">
+      <input type="password" class="form-control" id="floatingPassword" placeholder="Password" type="password" name="luci_password">
+      <label for="floatingPassword"><%:Password%></label>
+    </div>
+
+    <input class="w-100 btn btn-lg btn-primary" type="submit" value="<%:Login%>" />
+  </form>
+
+</main>
+
+
+
+
+
+
+<script type="text/javascript">//<![CDATA[
+	var input = document.getElementsByName('luci_password')[0];
+	if (input)
+		input.focus();
+//]]></script>
+
+<%
+local uci  = require "luci.model.uci".cursor()
+local fs  = require "nixio.fs"
+local https_key = uci:get("uhttpd", "main", "key")
+local https_port = uci:get("uhttpd", "main", "listen_https")
+if type(https_port) == "table" then
+	https_port = https_port[1]
+end
+
+if https_port and fs.access(https_key) then
+	https_port = https_port:match("(%d+)$")
+%>
+
+<script type="text/javascript">//<![CDATA[
+	if (document.location.protocol != 'https:') {
+		var url = 'https://' + window.location.hostname + ':' + '<%=https_port%>' + window.location.pathname;
+		var img=new Image;
+		img.onload=function(){window.location = url};
+		img.src='https://' + window.location.hostname + ':' + '<%=https_port%>' + '<%=resource%>/cbi/up.gif?' + Math.random();;
+		setTimeout(function(){
+			img.src=''
+		}, 5000);
+	}
+//]]></script>
+
+<% end %>
+
+</body>
+</html>
