@@ -12,9 +12,11 @@ function addfavourite()
   local title = luci.http.formvalue("title")
   local src = luci.http.formvalue("src")
   local short = luci.http.formvalue("short")
+  local bcolor = luci.http.formvalue("bcolor")
+  local fcolor = luci.http.formvalue("fcolor")
   local name = os.time()
-  local uci = luci.model.uci.cursor()
-  uci:set('vbeauty', '@favourite.'..name, 'title', title)
+  --local uci = luci.model.uci.cursor()
+  --uci:set('vbeauty', '@favourite.'..name, 'title', title)
   local executeString = "uci set vbeauty."..name.."=favourite"
   luci.sys.exec(executeString)
 
@@ -26,6 +28,14 @@ function addfavourite()
 
   local shortString = "uci set vbeauty."..name..".short="..short
   luci.sys.exec(shortString)
+
+  local bcolorString = "uci set vbeauty."..name..".bcolor="..bcolor
+  luci.sys.exec(bcolorString)
+
+  local fcolorString = "uci set vbeauty."..name..".fcolor="..fcolor
+  luci.sys.exec(fcolorString)
+
+
   luci.sys.exec("uci commit vbeauty");
   local o = {}
   o['data'] = "ok"
@@ -46,6 +56,8 @@ function getfavourites()
             e['title'] = s.title
             e['short'] = s.short
             e['src'] = s.src
+            e['bcolor'] = s.bcolor
+            e['fcolor'] = s.fcolor
             table.insert(favourite_table, e)
         end
     )
