@@ -384,6 +384,14 @@
               <input type="text" class="form-control" id="addsrc" placeholder="Url"  value=""/>
               <label for="addsrc">常用网址[检查确认即可]</label>
             </div>
+             <div class="form-floating">
+              <input type="text" class="form-control" id="bcolor" placeholder="Background Color"  value=""/>
+              <label for="bcolor">背景色</label>
+            </div>
+             <div class="form-floating">
+              <input type="text" class="form-control" id="fcolor" placeholder="Front Color"  value=""/>
+              <label for="bcolor">前景色</label>
+            </div>
             <input class="w-100 btn btn-lg btn-primary" type="button" onclick="saveFavourite()" value="保存" />
         </div> 
     </div>
@@ -560,11 +568,9 @@ function saveFavourite(){
     var title = $("#addtitle").val();
     var shorttitle = $("#shorttitle").val();
     var src = $("#addsrc").val();
-    var keys = Object.keys(colors);
-    var randIndex = Math.floor(Math.random() * keys.length);
-    var randKey = keys[randIndex];
-    var bgcolor = randKey;
-    var fcolor = colors[randKey];
+    var bcolor = $("#bcolor").val();
+    var fcolor = $("#fcolor").val();
+
     layer.load();
     $.ajax({
          url:'<%=luci.dispatcher.build_url("admin","status","vbeauty", "addfavourite")%>',
@@ -573,14 +579,18 @@ function saveFavourite(){
          data:{
             title:title,
             src:src,
-            short:shorttitle
+            short:shorttitle,
+            bcolor:bcolor,
+            fcolor:fcolor
         },
          success:function(r){
-            $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+r.msg+"\" style=\"text-align: center\" title=\""+title+"\" data-src=\""+src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+bgcolor+";color:"+fcolor+"\">"+shorttitle+"</span><strong>"+title+"</strong></a></li>");
+            $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+r.msg+"\" style=\"text-align: center\" title=\""+title+"\" data-src=\""+src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+bcolor+";color:"+fcolor+"\">"+shorttitle+"</span><strong>"+title+"</strong></a></li>");
              layer.closeAll();
             $("#addtitle").val('');
             $("#shorttitle").val('');
             $("#addsrc").val('');
+            $("#bcolor").val('');
+            $("#fcolor").val('');
             fBind();
          },
          error:function(XMLHttpRequest, textStatus, errorThrown){
@@ -624,13 +634,8 @@ function getFavourites(){
          method:'post',
          data:{},
          success:function(r){
-            console.log(r);
             $.each(r, function(i,val){
-                var randIndex = Math.floor(Math.random() * keys.length);
-                var randKey = keys[randIndex];
-                var bgcolor = randKey;
-                var fcolor = colors[randKey];
-              $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+val.name+"\" style=\"text-align: center\" title=\""+val.title+"\" data-src=\""+val.src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+bgcolor+";color:"+fcolor+"\">"+val.short+"</span><strong>"+val.title+"</strong></a></li>");
+              $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+val.name+"\" style=\"text-align: center\" title=\""+val.title+"\" data-src=\""+val.src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+val.bcolor+";color:"+val.fcolor+"\">"+val.short+"</span><strong>"+val.title+"</strong></a></li>");
             });
             layer.closeAll();
             fBind();
@@ -678,10 +683,18 @@ function cBind(){
               openWindow(title,src);
             },
             longTap:function(event, target) {
+              var keys = Object.keys(colors);
+              var randIndex = Math.floor(Math.random() * keys.length);
+              var randKey = keys[randIndex];
+              var bgcolor = randKey;
+              var fcolor = colors[randKey];
+
               var title = $(this).attr('title');
               var src = $(this).attr('data-src');
               $("#addtitle").val(title);
               $("#addsrc").val(src);
+               $("#bcolor").val(bgcolor);
+               $("#fcolor").val(fcolor);
                var index = layer.open({
                       title:"加入常用",
                       type: 1,
