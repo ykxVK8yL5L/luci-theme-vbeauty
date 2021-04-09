@@ -11,7 +11,8 @@
 	local fs = require "nixio.fs"
 	local nutil = require "nixio.util"
 	local uci = require 'luci.model.uci'.cursor()
-	local media = luci.config.main.mediaurlbase
+	--local media = luci.config.main.mediaurlbase
+    local media = " /luci-static/vbeauty"
 
 	-- send as HTML5
 	http.prepare_content("text/html")
