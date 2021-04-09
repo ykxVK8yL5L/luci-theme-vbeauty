@@ -19,6 +19,9 @@
 
     local categories = disp.node_childs(tree)
     local media = luci.config.main.mediaurlbase
+    local fs = require "nixio.fs"
+    local nutil = require "nixio.util"
+    local uci = require 'luci.model.uci'.cursor()
 
     local c = tree
     local i, r
@@ -135,16 +138,16 @@
             for i, r in ipairs(childs) do
                 local nnode = node.nodes[r]
                 local title = pcdata(striptags(translate(nnode.title)))
-                write('<li><a style="text-align: center" title="%s" onclick="openWindow(\'%s\',\'%s\')" target="_blank"><span class="textlogo shake" style="background-color:#C41200;color:#ffffff">%s</span><strong>%s</strong></a></li>\n' %{
-                    title,
-                    title,
+                write('<li><a class="citem"  data-src="%s" style="text-align: center" title="%s"  target="_blank"><span class="textlogo shake" style="background-color:#C41200;color:#ffffff">%s</span><strong>%s</strong></a></li>\n' %{
                     nodeurl(prefix, r, nnode.query),
+                    title,
                     utf8sub(title,0,1),
                     utf8sub(title,0,7)
                 })
             end
         end
     end
+
 
     local function render_topmenu()
         local childs = disp.node_childs(cattree)
@@ -158,7 +161,6 @@
                     render_submenu(category .. "/" .. r, nnode)
                      write('</ul>')
                 end
-                
             end
         end
     end
@@ -174,11 +176,8 @@
 
                 if #grandchildren > 0 then
                     local title = pcdata(striptags(translate(nnode.title)))
-
-                    write('<a class="%s" data-title="%s" href="#">%s</a>' %{
-                        (nnode._menu_selected) and 'active' or '',title,
-                        title
-                    })
+                    -- (nnode._menu_selected) and 'active' or ''
+                    write('<a data-title="%s" href="#">%s</a>' %{title,title})
                 end
             end
         end
@@ -370,6 +369,25 @@
     </style>
 </head>
 <body>
+    <div id="addform" class="card" style="display: none">
+        <div class="card-body">
+            <h1 class="h1 mb-3 fw-normal">加入常用</h1>
+            <div class="form-floating">
+              <input type="text" class="form-control" id="shorttitle" placeholder="Shorttitle" value=""/>
+              <label for="shorttitle">简称[1个汉字或1个字母]</label>
+            </div>
+            <div class="form-floating">
+              <input type="text" class="form-control" id="addtitle" placeholder="Title" value=""/>
+              <label for="addtitle">标题[最佳4个汉字或6个字母]</label>
+            </div>
+            <div class="form-floating">
+              <input type="text" class="form-control" id="addsrc" placeholder="Url"  value=""/>
+              <label for="addsrc">常用网址[检查确认即可]</label>
+            </div>
+            <input class="w-100 btn btn-lg btn-primary" type="button" onclick="saveFavourite()" value="保存" />
+        </div> 
+    </div>
+<div id="container">
 <div id="particles-js" style="position:absolute; top: 0; z-index: -100; width: 100%;height: 100%;">
     <canvas class="particles-js-canvas-el" height="960" style="width: 100%; height: 100%;" width="1303"></canvas>
 </div>
@@ -497,6 +515,7 @@
         
         <!-- 外网访问地址 -->
         <div class="app animated fadeInLeft" id="app">
+            <ul id="favourites"></ul>
             <% render_topmenu() %>
         </div>
         <!-- 内网网访问地址 -->
@@ -518,12 +537,14 @@
 
 
 <div class="navbar nav-footer" style="overflow-x: auto;padding: 0;flex-wrap: nowrap;">
+            <a href="#home" class="active">常用</a>
             <% render_navmenu() %>
 <!--             <a href="#home" class="active">本地导航</a>
             <a href="#home" class="">常用网站</a> -->
  </div>
+</div>
 <script type="text/javascript">
-
+var colors = { "#3b5998": "#ffffff",  "#E12F67": "#ffffff",  "#1db954": "#ffffff",  "#1769ff": "#ffffff",  "#cd201f": "#ffffff",  "#1da1f2": "#ffffff","#cc2127": "#ffffff", "#ea4c89": "#ffffff",  "#56B68B": "#ffffff",  "#0077b5": "#ffffff",  "#cc3732": "#ffffff",  "#323232": "#ffffff",  "#F8630E": "#ffffff",  "#F94877": "#ffffff",  "#FFFC00": "#ffffff",  "#0066DC": "#ffffff",  "#25D366": "#ffffff",  "#1ab7ea": "#ffffff",  "#4d75a3": "#ffffff",  "#44546B": "#ffffff",  "#00b489": "#ffffff",  "#006ed2": "#ffffff",  "#ff5700": "#ffffff",  "#05CC47": "#ffffff",  "#C41200": "#ffffff",  "#D51007": "#ffffff",  "#272727": "#ffffff",  "#313131": "#ffffff",  "#FF5A60": "#ffffff",  "#1FBAD6": "#ffffff",  "#2196F3": "#ffffff",  "#FF0000": "#ffffff",  "#0088CC": "#ffffff",  "#007EE5": "#ffffff",  "#2890C3": "#ffffff",  "#1C1B1A": "#ffffff",  "#E62B1E": "#ffffff",  "#ff3366": "#ffffff",  "#52bad5": "#ffffff",  "#263F6A": "#ffffff",  "#79c142": "#ffffff",  "#222222": "#ffffff",  "#008cdd": "#ffffff",  "#A4C639": "#ffffff",  "#00AFF0": "#ffffff",  "#76CC1E": "#ffffff",  "#1D508D": "#ffffff",  "#6ebc6c": "#ffffff",  "#46A5E3": "#ffffff",  "#0050EF": "#ffffff",  "#6441A5": "#ffffff",  "#205081": "#ffffff",  "#DC3D50": "#ffffff",  "#8ba753": "#ffffff",  "#002B5C": "#ffffff",  "#96BF48": "#ffffff",  "#B30838": "#ffffff",  "#000000": "#ffffff",  "#171515": "#ffffff",  "#E12828": "#ffffff",  "#344A5F": "#ffffff",  "#C13832": "#ffffff",  "#1caff6": "#ffffff",  "#9abb70": "#ffffff",  "#19a9e5": "#ffffff",  "#379ECC": "#ffffff",  "#21759b": "#ffffff",  "#ff0000": "#ffffff",  "#DD4814": "#ffffff",  "#2e9fff": "#ffffff",  "#bb0000": "#ffffff",  "#4b9123": "#ffffff",  "#B97A45": "#ffffff",  "#c22026": "#ffffff",  "#f6a006": "#ffffff",  "#2585e5": "#ffffff",  "#45a1ff": "#ffffff",  "#4264fb": "#ffffff",  "#563d7c": "#ffffff"}
     function openWindow(title='',url){
         var index = layer.open({
             title:title,
@@ -535,40 +556,180 @@
         layer.full(index);
     }
 
-
-    $(function() {
-        var colors = { "#3b5998": "#ffffff",  "#E12F67": "#ffffff",  "#1db954": "#ffffff",  "#1769ff": "#ffffff",  "#cd201f": "#ffffff",  "#1da1f2": "#ffffff","#cc2127": "#ffffff", "#ea4c89": "#ffffff",  "#56B68B": "#ffffff",  "#0077b5": "#ffffff",  "#cc3732": "#ffffff",  "#323232": "#ffffff",  "#F8630E": "#ffffff",  "#F94877": "#ffffff",  "#FFFC00": "#ffffff",  "#0066DC": "#ffffff",  "#25D366": "#ffffff",  "#1ab7ea": "#ffffff",  "#4d75a3": "#ffffff",  "#44546B": "#ffffff",  "#00b489": "#ffffff",  "#006ed2": "#ffffff",  "#ff5700": "#ffffff",  "#05CC47": "#ffffff",  "#C41200": "#ffffff",  "#D51007": "#ffffff",  "#272727": "#ffffff",  "#313131": "#ffffff",  "#FF5A60": "#ffffff",  "#1FBAD6": "#ffffff",  "#2196F3": "#ffffff",  "#FF0000": "#ffffff",  "#0088CC": "#ffffff",  "#007EE5": "#ffffff",  "#2890C3": "#ffffff",  "#1C1B1A": "#ffffff",  "#E62B1E": "#ffffff",  "#ff3366": "#ffffff",  "#52bad5": "#ffffff",  "#263F6A": "#ffffff",  "#79c142": "#ffffff",  "#222222": "#ffffff",  "#008cdd": "#ffffff",  "#A4C639": "#ffffff",  "#00AFF0": "#ffffff",  "#76CC1E": "#ffffff",  "#1D508D": "#ffffff",  "#6ebc6c": "#ffffff",  "#46A5E3": "#ffffff",  "#0050EF": "#ffffff",  "#6441A5": "#ffffff",  "#205081": "#ffffff",  "#DC3D50": "#ffffff",  "#8ba753": "#ffffff",  "#002B5C": "#ffffff",  "#96BF48": "#ffffff",  "#B30838": "#ffffff",  "#000000": "#ffffff",  "#171515": "#ffffff",  "#E12828": "#ffffff",  "#344A5F": "#ffffff",  "#C13832": "#ffffff",  "#1caff6": "#ffffff",  "#9abb70": "#ffffff",  "#19a9e5": "#ffffff",  "#379ECC": "#ffffff",  "#21759b": "#ffffff",  "#ff0000": "#ffffff",  "#DD4814": "#ffffff",  "#2e9fff": "#ffffff",  "#bb0000": "#ffffff",  "#4b9123": "#ffffff",  "#B97A45": "#ffffff",  "#c22026": "#ffffff",  "#f6a006": "#ffffff",  "#2585e5": "#ffffff",  "#45a1ff": "#ffffff",  "#4264fb": "#ffffff",  "#563d7c": "#ffffff"}
-        
-        var keys = Object.keys(colors)
-         $(".textlogo").each(function(){
-            var randIndex = Math.floor(Math.random() * keys.length);
-            var randKey = keys[randIndex];
-            var bgcolor = randKey;
-            var fcolor = colors[randKey];
-            $(this).css({"color":fcolor ,"backgroundColor":bgcolor});
-        });
-
-        $(".navbar a").click(function() {
-            $(this).addClass("active").siblings().removeClass("active");
-            $("#app ul").eq($(this).index()).show().siblings().hide();
-        })
-
-        $("body").swipe( {
-        //Generic swipe handler for all directions
-        swipe:function(event, direction, distance, duration, fingerCount, fingerData) {
-            var cindex = $('.nav-footer a.active').index();
-            var tlength = $('.nav-footer a').length;
-            if(direction=='left'&&cindex<(tlength-1)){
-                $('.nav-footer a')[cindex+1].click();
-            }
-            if(direction=='right'&&cindex>0){
-                $('.nav-footer a')[cindex-1].click();
-            }
+function saveFavourite(){
+    var title = $("#addtitle").val();
+    var shorttitle = $("#shorttitle").val();
+    var src = $("#addsrc").val();
+    var keys = Object.keys(colors);
+    var randIndex = Math.floor(Math.random() * keys.length);
+    var randKey = keys[randIndex];
+    var bgcolor = randKey;
+    var fcolor = colors[randKey];
+    layer.load();
+    $.ajax({
+         url:'<%=luci.dispatcher.build_url("admin","status","vbeauty", "addfavourite")%>',
+         dataType:'json',
+         method:'post',
+         data:{
+            title:title,
+            src:src,
+            short:shorttitle
         },
-        //Default is 75px, set to 0 for demo so any distance triggers swipe
-         threshold:75
+         success:function(r){
+            $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+r.msg+"\" style=\"text-align: center\" title=\""+title+"\" data-src=\""+src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+bgcolor+";color:"+fcolor+"\">"+shorttitle+"</span><strong>"+title+"</strong></a></li>");
+             layer.closeAll();
+            $("#addtitle").val('');
+            $("#shorttitle").val('');
+            $("#addsrc").val('');
+            fBind();
+         },
+         error:function(XMLHttpRequest, textStatus, errorThrown){
+           alert(XMLHttpRequest.status);
+           alert(XMLHttpRequest.readyState);
+           layer.msg(textStatus);
+           }
+         });
+
+}
+
+function deleteFavourite(index,name){
+    layer.load();
+    $.ajax({
+         url:'<%=luci.dispatcher.build_url("admin","status","vbeauty", "delfavourite")%>',
+         dataType:'json',
+         method:'post',
+         data:{
+            name:name
+        },
+         success:function(r){
+           $('#favourites li').eq(index).remove();
+            layer.closeAll();
+            fBind();
+         },
+         error:function(XMLHttpRequest, textStatus, errorThrown){
+           alert(XMLHttpRequest.status);
+           alert(XMLHttpRequest.readyState);
+           layer.msg(textStatus);
+           }
+         });
+}
+
+
+function getFavourites(){
+    var keys = Object.keys(colors);
+    layer.load();
+   $.ajax({
+         url:'<%=luci.dispatcher.build_url("admin","status","vbeauty", "getfavourites")%>',
+         dataType:'json',
+         method:'post',
+         data:{},
+         success:function(r){
+            console.log(r);
+            $.each(r, function(i,val){
+                var randIndex = Math.floor(Math.random() * keys.length);
+                var randKey = keys[randIndex];
+                var bgcolor = randKey;
+                var fcolor = colors[randKey];
+              $("#favourites").append("<li><a class=\"fitem\"  data-name=\""+val.name+"\" style=\"text-align: center\" title=\""+val.title+"\" data-src=\""+val.src+"\" target=\"_blank\"><span class=\"textlogo shake\" style=\"background-color:"+bgcolor+";color:"+fcolor+"\">"+val.short+"</span><strong>"+val.title+"</strong></a></li>");
+            });
+            layer.closeAll();
+            fBind();
+         },
+         error:function(XMLHttpRequest, textStatus, errorThrown){
+           alert(XMLHttpRequest.status);
+           alert(XMLHttpRequest.readyState);
+           layer.msg(textStatus);
+           }
+         });
+}
+
+
+
+function fBind(){
+    $(".fitem").swipe("destroy");
+    $(".fitem").swipe( {
+            tap:function(event, target) {
+              var title = $(this).attr('title');
+              var src = $(this).attr('data-src');
+              openWindow(title,src);
+            },
+            longTap:function(event, target) {
+              var name = $(this).attr('data-name');
+              var title = $(this).attr('title');
+              var index = $(this).parent().index();
+               layer.confirm('您确认要删除？', {
+                  btn: ['确定','取消'] //按钮
+                }, function(){
+                  deleteFavourite(index,name);
+                }, function(){
+                  
+                });
+            },
+            triggerOnTouchLeave:true,
+            threshold:50
       });
+}
+
+function cBind(){
+     $(".citem").swipe( {
+            tap:function(event, target) {
+              var title = $(this).attr('title');
+              var src = $(this).attr('data-src');
+              openWindow(title,src);
+            },
+            longTap:function(event, target) {
+              var title = $(this).attr('title');
+              var src = $(this).attr('data-src');
+              $("#addtitle").val(title);
+              $("#addsrc").val(src);
+               var index = layer.open({
+                      title:"加入常用",
+                      type: 1,
+                      content: $('#addform'),
+                      area: ['100%', '100%'],
+                      maxmin: true
+                    });
+            },
+            triggerOnTouchLeave:true,
+            threshold:50
+      });
+}
+
+
+
+$(function() {
+    getFavourites();
+    var keys = Object.keys(colors);
+     $(".textlogo").each(function(){
+        var randIndex = Math.floor(Math.random() * keys.length);
+        var randKey = keys[randIndex];
+        var bgcolor = randKey;
+        var fcolor = colors[randKey];
+        $(this).css({"color":fcolor ,"backgroundColor":bgcolor});
+    });
+
+    $(".navbar a").click(function() {
+        $(this).addClass("active").siblings().removeClass("active");
+        $("#app ul").eq($(this).index()).show().siblings().hide();
     })
+
+    $("#container").swipe( {
+    //Generic swipe handler for all directions
+    swipe:function(event, direction, distance, duration, fingerCount, fingerData) {
+        var cindex = $('.nav-footer a.active').index();
+        var tlength = $('.nav-footer a').length;
+        if(direction=='left'&&cindex<(tlength-1)){
+            $('.nav-footer a')[cindex+1].click();
+        }
+        if(direction=='right'&&cindex>0){
+            $('.nav-footer a')[cindex-1].click();
+        }
+    },
+    //Default is 75px, set to 0 for demo so any distance triggers swipe
+     threshold:75,
+  });
+   cBind();
+})
 </script>
 </body>
 
