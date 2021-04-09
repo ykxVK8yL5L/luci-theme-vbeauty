@@ -2,7 +2,7 @@ module("luci.controller.admin.vbeauty", package.seeall)
 
 function index()
     entry({"admin", "status"}, alias("admin", "status", "vbeauty"), _("Status"), 0).index = true
-    entry({"admin", "status", "vbeauty"}, template("vbeauty"), _("Vbeauty"), 0)
+    entry({"admin", "status", "vbeauty"}, template("themes/vbeauty/vbeauty"), _("Vbeauty"), 0)
     entry({'admin', 'status', 'vbeauty', 'addfavourite'}, call('addfavourite'))
     entry({'admin', 'status', 'vbeauty', 'delfavourite'}, call('delfavourite'))
     entry({'admin', 'status', 'vbeauty', 'getfavourites'}, call('getfavourites'))
