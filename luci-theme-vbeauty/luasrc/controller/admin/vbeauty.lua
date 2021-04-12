@@ -9,7 +9,7 @@ function index()
 end
 
 function addfavourite()
-  local title = luci.http.formvalue("title")
+  local title = string.gsub(luci.http.formvalue("title"), "%s+", "")
   local src = luci.http.formvalue("src")
   local short = luci.http.formvalue("short")
   local bcolor = luci.http.formvalue("bcolor")
