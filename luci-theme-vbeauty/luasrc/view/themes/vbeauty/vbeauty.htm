@@ -526,6 +526,11 @@
         <div class="app animated fadeInLeft" id="app">
             <ul id="favourites"></ul>
             <% render_topmenu() %>
+            <ul>
+                <li><a class="citem"  data-src='<%=luci.dispatcher.build_url("admin","status","vbeauty", "show")%>' style="text-align: center" title="首页可见"  target="_blank"><span class="textlogo shake" style="background-color:#C41200;color:#ffffff">显</span><strong>首页可见</strong></a></li>
+                <li><a class="citem"  data-src='<%=luci.dispatcher.build_url("admin","status","vbeauty", "hide")%>' style="text-align: center" title="首页隐藏"  target="_blank"><span class="textlogo shake" style="background-color:#C41200;color:#ffffff">藏</span><strong>首页隐藏</strong></a></li>
+            </ul>
+
         </div>
         <!-- 内网网访问地址 -->
         <div style="clear: both;"></div>
@@ -548,6 +553,8 @@
 <div class="navbar nav-footer" style="overflow-x: auto;padding: 0;flex-wrap: nowrap;">
             <a href="#home" class="active">常用</a>
             <% render_navmenu() %>
+            <a href="#">主题设置</a>
+
 <!--             <a href="#home" class="active">本地导航</a>
             <a href="#home" class="">常用网站</a> -->
  </div>
