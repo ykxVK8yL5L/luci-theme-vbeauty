@@ -12,6 +12,5 @@ rm -rf /tmp/luci-modulecache/*
 rm -rf /tmp/luci-indexcache
 ```
 （这两个命令是清除luci缓存的 平时遇页面问题都可以使用）
-### ipk下载地址:https://github.com/ykxVK8yL5L/luci-theme-vbeauty/raw/main/luci-theme-vbeauty_git-21.098.30128-c41c174-1_all.ipk
 ![image](https://github.com/ykxVK8yL5L/luci-theme-vbeauty/blob/main/Screenshots/Login.png?raw=true)
 ![image](https://github.com/ykxVK8yL5L/luci-theme-vbeauty/blob/main/Screenshots/ScreenShot.png?raw=true)
