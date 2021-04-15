@@ -1,3 +1,4 @@
+由于本人系统问题 再加上git用的不熟导致文件夹内很多隐藏文件  使用前请删除
 # luci-theme-vbeauty
 使用演示：https://youtu.be/y56WW6PxnuI
 # 实测在Ipad air上有些页面出现卡死及乱跳  原因未知 可能为js导致的页面不稳定  pc和手机端正常 老旧设备请勿使用
