@@ -17,6 +17,8 @@ jobs:
       strategy:
         matrix:
           target:
+            - arch: "mediatek_filogic"
+              sdk: "https://downloads.openwrt.org/snapshots/targets/mediatek/filogic/openwrt-sdk-mediatek-filogic_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
             - arch: "x86_64"
               sdk: "https://downloads.openwrt.org/snapshots/targets/x86/64/openwrt-sdk-x86-64_gcc-12.3.0_musl.Linux-x86_64.tar.xz"
       steps:
